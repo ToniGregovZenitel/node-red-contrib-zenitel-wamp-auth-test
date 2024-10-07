@@ -1,5 +1,5 @@
 {
-  "name": "node-red-contrib-zenitel-wamp-auth",
+  "name": "node-red-contrib-zenitel-wamp-auth-test",
   "version": "1.0.4",
   "description": "Nodes for accessing Zenitel Connect Pro using token",
   "main": "zenitel-wamp-auth.js",
