@@ -15,27 +15,52 @@ module.exports = function (RED) {
 	tls.DEFAULT_MIN_VERSION = "TLSv1.2";
 	tls.DEFAULT_MAX_VERSION = "TLSv1.3";
 
-    function WampClientNode(config) {
-        RED.nodes.createNode(this, config);
-        
-        this.address = config.address;
-        this.realm = config.realm;
-        this.authId = config.authId;
-        this.password = config.password;
+  function WampClientNode(config) {
+    RED.nodes.createNode(this, config);
+    
+    this.address = config.address;
+    this.realm = config.realm;
+    this.authId = config.authId;
+    this.password = config.password;
 
-
-        this.wampClient = function () {
+    // Get or create a WAMP client instance
+    this.wampClient = function () {
+        try {
             return wampClientPool.get(this.address, this.realm, this.authId, this.password);
-        };
-
-        this.on = function (a, b) {
-            this.wampClient().on(a, b);
-        };
-        this.close  = function (done) {
-            wampClientPool.close(this.address, this.realm, done);
+        } catch (error) {
+            this.error(`Error getting WAMP client: ${error.message}`);
+            this.status({ fill: "red", shape: "ring", text: "connection error" });
+            return null;
         }
-    }
-    RED.nodes.registerType("wamp-client", WampClientNode);
+    };
+
+    // Bind event listeners
+    this.on = function (a, b) {
+        try {
+            const client = this.wampClient();
+            if (client) {
+                client.on(a, b);
+            } else {
+                this.error("No WAMP client available to bind events.");
+            }
+        } catch (error) {
+            this.error(`Error binding event listener: ${error.message}`);
+        }
+    };
+
+    // Close the connection
+    this.close = function (done) {
+        try {
+            wampClientPool.close(this.address, this.realm, done);
+        } catch (error) {
+            this.error(`Error closing WAMP client: ${error.message}`);
+            done(error);
+        }
+    };
+}
+
+RED.nodes.registerType("wamp-client", WampClientNode);
+
 
     function WampClientOutNode(config) {
         RED.nodes.createNode(this, config);
