@@ -9,7 +9,7 @@ Install
 
 Run the following command in your Node-RED user directory
 
-    npm install node-red-contrib-zenitel-wamp-auth
+    npm install node-red-contrib-zenitel-wamp-auth-test
 
 
 Usage
